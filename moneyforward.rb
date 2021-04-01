@@ -10,7 +10,8 @@ class MoneyForward
     pwd = Dir.pwd
     prefs = {
       prompt_for_download: false,
-      default_directory: pwd
+      default_directory: pwd,
+      directory_upgrade: true
     }
     options = Selenium::WebDriver::Chrome::Options.new
     options.add_preference(:download, prefs)
@@ -19,11 +20,18 @@ class MoneyForward
   end
 
   def login(user, pass)
-    @driver.navigate.to BASE_URL + '/users/sign_in'
-    form = @driver.find_element(:id, 'new_sign_in_session_service')
-    form.find_element(:id, 'sign_in_session_service_email').send_keys(user)
-    form.find_element(:id, 'sign_in_session_service_password').send_keys(pass)
-    form.find_element(:id, 'login-btn-sumit').click
+    @driver.navigate.to 'https://id.moneyforward.com/sign_in/email'
+    form = @driver.find_element(:xpath, "//form[@action='/sign_in/email']")
+    form.find_element(:name, 'mfid_user[email]').send_keys(user)
+    form.find_element(:xpath, "//input[@type='submit']").click
+    
+    form = @driver.find_element(:xpath, "//form[@action='/sign_in']")
+    form.find_element(:name, 'mfid_user[password]').send_keys(pass)
+    form.find_element(:xpath, "//input[@type='submit']").click
+
+    @driver.navigate.to BASE_URL + '/sign_in'
+    form = @driver.find_element(:xpath, "//form[@method='post']")
+    form.find_element(:xpath, "//input[@type='submit']").click
   end
 
   def logout
